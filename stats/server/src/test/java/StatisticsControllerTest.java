@@ -125,12 +125,10 @@ public class StatisticsControllerTest {
     void shouldReturnCreatedResponseForSaveHit() throws Exception {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
-                        .content("""
-                                {"app": "SomeApp",
-                                "uri": "/test",
-                                "ip": "192.168.01.01",
-                                "timestamp": "2000-01-01 00:01:00"}
-                                """))
+                        .content("{\"app\": \"SomeApp\", " +
+                                "\"uri\": \"/test\", " +
+                                "\"ip\": \"192.168.01.01\", " +
+                                "\"timestamp\": \"2000-01-01 00:01:00\"}"))
                 .andExpect(status().isCreated());
     }
 
@@ -139,11 +137,9 @@ public class StatisticsControllerTest {
     void shouldReturnBadRequestForSaveHitWithNoApp() throws Exception {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
-                        .content("""
-                                {"uri": "/test",
-                                "ip": "192.168.01.01",
-                                "timestamp": "2000-01-01 00:01:00"}
-                                """))
+                        .content("{\"uri\": \"/test\", " +
+                                "\"ip\": \"192.168.01.01\", " +
+                                "\"timestamp\": \"2000-01-01 00:01:00\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -152,11 +148,9 @@ public class StatisticsControllerTest {
     void shouldReturnBadRequestForSaveHitWithNoUri() throws Exception {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
-                        .content("""
-                                {"app": "SomeApp",
-                                "ip": "192.168.01.01",
-                                "timestamp": "2000-01-01 00:01:00"}
-                                """))
+                        .content("{\"app\": \"SomeApp\", " +
+                                "\"ip\": \"192.168.01.01\", " +
+                                "\"timestamp\": \"2000-01-01 00:01:00\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -165,11 +159,9 @@ public class StatisticsControllerTest {
     void shouldReturnBadRequestForSaveHitWithNoIp() throws Exception {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
-                        .content("""
-                                {"app": "SomeApp",
-                                "uri": "/test",
-                                "timestamp": "2000-01-01 00:01:00"}
-                                """))
+                        .content("{\"app\": \"SomeApp\", " +
+                                "\"uri\": \"/test\", " +
+                                "\"timestamp\": \"2000-01-01 00:01:00\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -178,11 +170,9 @@ public class StatisticsControllerTest {
     void shouldReturnBadRequestForSaveHitWithNoTimestamp() throws Exception {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
-                        .content("""
-                                {"app": "SomeApp",
-                                "uri": "/test",
-                                "ip": "192.168.01.01"}
-                                """))
+                        .content("{\"app\": \"SomeApp\", " +
+                                "\"uri\": \"/test\", " +
+                                "\"ip\": \"192.168.01.01\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -191,12 +181,10 @@ public class StatisticsControllerTest {
     void shouldReturnBadRequestForSaveHitWithTimestampInvalid() throws Exception {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
-                        .content("""
-                                {"app": "SomeApp",
-                                "uri": "/test",
-                                "ip": "192.168.01.01",
-                                "timestamp": "Help me, pls"}
-                                """))
+                        .content("{\"app\": \"SomeApp\", " +
+                                "\"uri\": \"/test\", " +
+                                "\"ip\": \"192.168.01.01\", " +
+                                "\"timestamp\": \"Help me, pls\"}"))
                 .andExpect(status().isInternalServerError());
     }
 }
