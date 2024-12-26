@@ -12,7 +12,6 @@
     <name>Explore With Me Statistics</name>
     <artifactId>explore-with-me-statistics</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
 
     <modules>
         <module>common</module>

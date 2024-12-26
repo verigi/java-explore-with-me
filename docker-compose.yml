@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   stats-server:
     build: ./stats/server
@@ -8,10 +10,10 @@ services:
       stats-db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats-db
-      SPRING_DATASOURCE_USERNAME: stats
-      SPRING_DATASOURCE_PASSWORD: stats
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats_db
+      - SPRING_DATASOURCE_USERNAME=stats
+      - SPRING_DATASOURCE_PASSWORD=stats
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9090/actuator/health || exit 1"]
       interval: 10s
@@ -24,9 +26,9 @@ services:
     ports:
       - "6431:5432"
     environment:
-      POSTGRES_DB: stats-db
-      POSTGRES_USER: stats
-      POSTGRES_PASSWORD: stats
+      - POSTGRES_DB=stats_db
+      - POSTGRES_USER=stats
+      - POSTGRES_PASSWORD=stats
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER"]
       interval: 5s
@@ -42,10 +44,10 @@ services:
       ewm-db:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/ewm-db
-      SPRING_DATASOURCE_USERNAME: ewm
-      SPRING_DATASOURCE_PASSWORD: ewm
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm_db
+      - SPRING_DATASOURCE_USERNAME=ewm
+      - SPRING_DATASOURCE_PASSWORD=ewm
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 10s
@@ -58,9 +60,9 @@ services:
     ports:
       - "6432:5432"
     environment:
-      POSTGRES_DB: ewm-db
-      POSTGRES_USER: ewm
-      POSTGRES_PASSWORD: ewm
+      - POSTGRES_DB=ewm_db
+      - POSTGRES_USER=ewm
+      - POSTGRES_PASSWORD=ewm
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER"]
       interval: 5s
