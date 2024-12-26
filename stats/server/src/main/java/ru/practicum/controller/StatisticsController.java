@@ -21,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 public class StatisticsController {
     private final StatisticsService service;
-    private final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    private final String format = "yyyy-MM-dd HH:mm:ss";
 
     @PostMapping("/hit")
     public ResponseEntity<EndpointHitDto> saveHit(@Valid @RequestBody EndpointHitDto endpointHitDto) {
@@ -36,8 +36,8 @@ public class StatisticsController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<List<ViewStatsDto>> getHits(@RequestParam @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime start,
-                                                      @RequestParam @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime end,
+    public ResponseEntity<List<ViewStatsDto>> getHits(@RequestParam @DateTimeFormat(pattern = format) LocalDateTime start,
+                                                      @RequestParam @DateTimeFormat(pattern = format) LocalDateTime end,
                                                       @RequestParam(required = false) List<String> uris,
                                                       @RequestParam(defaultValue = "false") Boolean unique) {
         validateDateTime(start, end);

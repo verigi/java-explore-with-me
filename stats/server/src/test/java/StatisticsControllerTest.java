@@ -126,12 +126,10 @@ public class StatisticsControllerTest {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
                         .content("""
-                                {
-                                "app": "SomeApp",
+                                {"app": "SomeApp",
                                 "uri": "/test",
                                 "ip": "192.168.01.01",
-                                "timestamp": "2000-01-01 00:01:00"          
-                                }
+                                "timestamp": "2000-01-01 00:01:00"}
                                 """))
                 .andExpect(status().isCreated());
     }
@@ -142,11 +140,9 @@ public class StatisticsControllerTest {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
                         .content("""
-                                {
-                                "uri": "/test",
+                                {"uri": "/test",
                                 "ip": "192.168.01.01",
-                                "timestamp": "2000-01-01 00:01:00"          
-                                }
+                                "timestamp": "2000-01-01 00:01:00"}
                                 """))
                 .andExpect(status().isBadRequest());
     }
@@ -157,11 +153,9 @@ public class StatisticsControllerTest {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
                         .content("""
-                                {
-                                "app": "SomeApp",
+                                {"app": "SomeApp",
                                 "ip": "192.168.01.01",
-                                "timestamp": "2000-01-01 00:01:00"          
-                                }
+                                "timestamp": "2000-01-01 00:01:00"}
                                 """))
                 .andExpect(status().isBadRequest());
     }
@@ -172,11 +166,9 @@ public class StatisticsControllerTest {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
                         .content("""
-                                {
-                                "app": "SomeApp",
+                                {"app": "SomeApp",
                                 "uri": "/test",
-                                "timestamp": "2000-01-01 00:01:00"          
-                                }
+                                "timestamp": "2000-01-01 00:01:00"}
                                 """))
                 .andExpect(status().isBadRequest());
     }
@@ -187,11 +179,9 @@ public class StatisticsControllerTest {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
                         .content("""
-                                {
-                                "app": "SomeApp",
+                                {"app": "SomeApp",
                                 "uri": "/test",
-                                "ip": "192.168.01.01"     
-                                }
+                                "ip": "192.168.01.01"}
                                 """))
                 .andExpect(status().isBadRequest());
     }
@@ -202,12 +192,10 @@ public class StatisticsControllerTest {
         mockMvc.perform(post("/hit")
                         .contentType("application/json")
                         .content("""
-                                {
-                                "app": "SomeApp",
+                                {"app": "SomeApp",
                                 "uri": "/test",
                                 "ip": "192.168.01.01",
-                                "timestamp": "Help me, pls"      
-                                }
+                                "timestamp": "Help me, pls"}
                                 """))
                 .andExpect(status().isInternalServerError());
     }
