@@ -4,9 +4,9 @@ import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.mapper.EndpointHitMapper;
 import ru.practicum.model.EndpointHit;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class StatisticsMapperTest {
     @Test
