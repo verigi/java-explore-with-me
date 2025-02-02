@@ -1,17 +1,15 @@
 package ru.practicum.general.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.general.enums.StateRequest;
 
 import java.time.LocalDateTime;
 
-@Data
 @Builder
 @Entity
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "participation_requests")
