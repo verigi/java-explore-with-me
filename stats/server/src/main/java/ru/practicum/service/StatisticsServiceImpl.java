@@ -55,7 +55,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     public List<ViewStatsDto> getHits(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         String choice = unique ? "unique" : "common";
         try {
-            log.debug("Getting {} hits: start={}, end={}", choice, start, end);
+            log.debug("Getting {} hits: start={}, end={}, uris={}", choice, start, end, uris);
             return collectHits(start, end, uris, unique);
         } catch (DataAccessException e) {
             logGetHitError("Data access exception", e, start, end, uris);

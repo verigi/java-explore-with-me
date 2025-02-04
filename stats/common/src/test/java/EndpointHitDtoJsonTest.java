@@ -9,9 +9,9 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.test.context.ContextConfiguration;
 import ru.practicum.dto.EndpointHitDto;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @JsonTest
 @ContextConfiguration(classes = DtoTestConfig.class)

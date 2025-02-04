@@ -47,24 +47,26 @@ public class StatisticsClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
-        log.debug("Client is going to send GET request to server. Trying to get hits: start={}, end={}",
-                start,
-                end);
-        Map<String, Object> params = Map.of("start", start,
+        log.debug("Sending GET request to stats server: start={}, end={}, uris={}, unique={}", start, end, uris, unique);
+        String urisParam = String.join(",", uris);
+        Map<String, Object> params = Map.of(
+                "start", start,
                 "end", end,
-                "uris", uris,
+                "uris", urisParam,
                 "unique", unique
         );
 
         try {
-            log.debug("GET request successfully send to server");
+            log.debug("GET request sent successfully to stats server");
             return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", params);
         } catch (ResourceAccessException e) {
-            log.error("Failed to connect with the server: {}", e.getMessage());
-            throw new ServerUnavailableException("Unable to get connection to server. Try again later");
+            log.error("Failed to connect to stats server: {}", e.getMessage());
+            throw new ServerUnavailableException("Unable to connect to stats server. Please try again later.");
         } catch (RestClientException e) {
-            log.error("Unexpected exception. Failed to send GET request: {}", e.getMessage());
-            throw new ClientRequestException("Unexpected exception: UI layer");
+            log.error("Failed to send GET request to stats server: {}", e.getMessage());
+            throw new ClientRequestException("Unexpected error while communicating with stats server.");
         }
     }
+
+
 }
