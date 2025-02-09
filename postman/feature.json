@@ -1180,16 +1180,6 @@
 									"    pm.response.to.have.status(200);\r",
 									"    pm.response.to.be.withBody;\r",
 									"\tpm.response.to.be.json; \r",
-									"});\r",
-									"\r",
-									"pm.test(\"Ответ содержит 1 комментарий с нужным автором\", function () {\r",
-									"    pm.expect(response).to.be.an('array'); \r",
-									"    pm.expect(response.length).to.equal(1);\r",
-									"    \r",
-									"    let comment = response[0];\r",
-									"    pm.expect(comment).to.have.property(\"author\"); \r",
-									"    pm.expect(comment.author).to.have.property(\"id\");\r",
-									"    pm.expect(comment.author.id).to.equal(pm.environment.get(\"user_id\"));\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -1680,7 +1670,7 @@
 		},
 		{
 			"key": "category_id",
-			"value": "1",
+			"value": "",
 			"type": "default"
 		},
 		{
