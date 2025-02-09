@@ -1675,22 +1675,12 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "",
+			"value": "localhost:8080",
 			"type": "default"
 		},
 		{
-			"key": "userId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "categoryId",
-			"value": "",
-			"type": "string"
-		},
-		{
 			"key": "category_id",
-			"value": "",
+			"value": "1",
 			"type": "default"
 		},
 		{
