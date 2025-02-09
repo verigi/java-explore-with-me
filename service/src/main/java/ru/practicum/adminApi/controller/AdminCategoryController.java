@@ -21,26 +21,24 @@ public class AdminCategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryDto> saveCategory(@Valid @RequestBody CreateCategoryDto createCategoryDto) {
-        log.debug("New POST request received. Category name: {}", createCategoryDto.getName());
+        log.debug("New POST request received. Create category. Category name={}", createCategoryDto.getName());
         CategoryDto categoryDto = service.createCategory(createCategoryDto);
-        log.debug("Category \"{}\" successfully saved", categoryDto.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryDto);
     }
 
     @DeleteMapping("/{catId}")
     public ResponseEntity<Void> deleteCategory(@PathVariable("catId") Long catId) {
-        log.debug("New DELETE request received. Category id: {}", catId);
+        log.debug("New DELETE request received. Delete category. Category id={}", catId);
         service.deleteCategory(catId);
-        log.debug("Category with id={} successfully deleted", catId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PatchMapping("/{catId}")
     public ResponseEntity<CategoryDto> updateCategory(@PathVariable("catId") Long catId,
                                               @Valid @RequestBody UpdateCategoryDto updateCategoryDto) {
-        log.debug("New PATCH request received. Category id: {}, new category name: {}", catId, updateCategoryDto.getName());
-        CategoryDto categoryDto = service.updateCategory(catId, updateCategoryDto); // тут будет сервис
-        log.debug("Category \"{}\" successfully updated", categoryDto.getId());
+        log.debug("New PATCH request received. Update category. Category id={}, new category name={}", catId,
+                updateCategoryDto.getName());
+        CategoryDto categoryDto = service.updateCategory(catId, updateCategoryDto);
         return ResponseEntity.status(HttpStatus.OK).body(categoryDto);
     }
 }

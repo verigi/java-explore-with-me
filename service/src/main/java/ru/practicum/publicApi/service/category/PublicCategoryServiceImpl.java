@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.general.dto.category.CategoryDto;
 import ru.practicum.general.mapper.CategoryMapper;
@@ -17,9 +17,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Repository
+@Service
 public class PublicCategoryServiceImpl implements PublicCategoryService {
-
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
@@ -39,6 +38,7 @@ public class PublicCategoryServiceImpl implements PublicCategoryService {
             throw new EntityNotFoundException("Category not found. Id: " + catId);
         } else {
             Category category = categoryOptional.get();
+            log.debug("Category fetched. Id={}", catId);
             return categoryMapper.toDto(category);
         }
     }
@@ -50,9 +50,11 @@ public class PublicCategoryServiceImpl implements PublicCategoryService {
         Pageable pageable = PageRequest.of(from / size, size);
 
         List<Category> categories = categoryRepository.findAll(pageable).getContent();
-
-        return categories.stream()
+        List<CategoryDto> categoryDtos = categories.stream()
                 .map(categoryMapper::toDto)
                 .collect(Collectors.toList());
+
+        log.debug("Categories fetched. Size={}", categoryDtos.size());
+        return categoryDtos;
     }
 }

@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.general.dto.comment.CommentShortDto;
 import ru.practicum.general.dto.event.CreateEventDto;
 import ru.practicum.general.dto.event.EventDto;
 import ru.practicum.general.dto.event.update.UpdateEventUserRequestDto;
@@ -14,18 +16,16 @@ import ru.practicum.general.dto.request.participation.ParticipationRequestDto;
 import ru.practicum.general.enums.StateRequest;
 import ru.practicum.general.exceptions.CustomAccessException;
 import ru.practicum.general.exceptions.CustomConflictException;
+import ru.practicum.general.mapper.CommentMapper;
 import ru.practicum.general.mapper.EventMapper;
 import ru.practicum.general.mapper.ParticipationRequestMapper;
 import ru.practicum.general.model.Category;
 import ru.practicum.general.model.Event;
 import ru.practicum.general.model.ParticipationRequest;
 import ru.practicum.general.model.User;
-import ru.practicum.general.repository.CategoryRepository;
-import ru.practicum.general.repository.EventRepository;
-import ru.practicum.general.repository.ParticipationRequestRepository;
-import ru.practicum.general.repository.UserRepository;
+import ru.practicum.general.repository.*;
 import ru.practicum.general.util.StatisticsHandler;
-import ru.practicum.general.util.ValidationHandler;
+import ru.practicum.general.util.EntityHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +39,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final ParticipationRequestRepository participationRequestRepository;
+    private final CommentRepository commentRepository;
     private final EventMapper eventMapper;
     private final ParticipationRequestMapper participationRequestMapper;
-    private final ValidationHandler validationHandler;
+    private final CommentMapper commentMapper;
+    private final EntityHandler entityHandler;
     private final StatisticsHandler statisticsHandler;
 
     @Autowired
@@ -49,39 +51,46 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                                    CategoryRepository categoryRepository,
                                    UserRepository userRepository,
                                    ParticipationRequestRepository participationRequestRepository,
+                                   CommentRepository commentRepository,
                                    EventMapper eventMapper,
                                    ParticipationRequestMapper participationRequestMapper,
-                                   ValidationHandler validationHandler,
+                                   CommentMapper commentMapper,
+                                   EntityHandler entityHandler,
                                    StatisticsHandler statisticsHandler) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.participationRequestRepository = participationRequestRepository;
+        this.commentRepository = commentRepository;
         this.participationRequestMapper = participationRequestMapper;
         this.eventMapper = eventMapper;
-        this.validationHandler = validationHandler;
+        this.commentMapper = commentMapper;
+        this.entityHandler = entityHandler;
         this.statisticsHandler = statisticsHandler;
     }
 
     @Override
+    @Transactional
     public EventDto createEvent(Long userId, CreateEventDto createEventDto) {
-        log.debug("Attempting request to create event from user={}", userId);
-        User user = validationHandler.findEntityById(userRepository, userId, "User");
-        Category category = validationHandler.findEntityById(categoryRepository, createEventDto.getCategory(), "Category");
-        validationHandler.validateUserEventDate(createEventDto.getEventDate());
+        log.debug("Attempting request to create event from user id={}", userId);
+        User user = entityHandler.findEntityById(userRepository, userId, "User");
+        Category category = entityHandler.findEntityById(categoryRepository, createEventDto.getCategory(), "Category");
+        entityHandler.validateUserEventDateToCreateAndUpdate(createEventDto.getEventDate());
 
         Event event = eventMapper.toEntity(createEventDto, category);
         event.setInitiator(user);
         eventRepository.save(event);
 
-        return eventMapper.toDto(event, 0);
+        log.debug("Event created. Id={}", event.getId());
+        return eventMapper.toDto(event, 0, List.of());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EventDto> getUserEvents(Long userId, int from, int size) {
-        log.debug("Attempting request to get all events from user={}", userId);
+        log.debug("Attempting request to get all events from user id={}", userId);
         Pageable pageable = PageRequest.of(from / size, size);
-        User user = validationHandler.findEntityById(userRepository, userId, "User");
+        User user = entityHandler.findEntityById(userRepository, userId, "User");
 
         List<Event> events = eventRepository.findAllByInitiator_Id(userId, pageable);
         List<Long> eventIds = events.stream().map(event -> event.getId()).collect(Collectors.toList());
@@ -89,72 +98,93 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         List<EventDto> eventDtos = events.stream()
                 .map(event -> {
                     int views = statisticsHandler.extractViews(viewsMap, event.getId());
-                    return eventMapper.toDto(event, views);
+
+                    List<CommentShortDto> commentDtos = commentRepository.findAllByEvent_Id(event.getId()).stream()
+                            .map(comment -> commentMapper.toShortDto(comment))
+                            .collect(Collectors.toList());
+                    return eventMapper.toDto(event, views, commentDtos);
                 })
                 .collect(Collectors.toList());
 
+        log.debug("Events fetched. Size={}", eventDtos.size());
         return eventDtos;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EventDto getUserEvent(Long userId, Long eventId) {
-        log.debug("Attempting request to get event={} from user={}", eventId, userId);
+        log.debug("Attempting request to get event id={} from user id={}", eventId, userId);
 
-        User user = validationHandler.findEntityById(userRepository, userId, "User");
-        Event event = validationHandler.findEntityById(eventRepository, eventId, "Event");
+        User user = entityHandler.findEntityById(userRepository, userId, "User");
+        Event event = entityHandler.findEntityById(eventRepository, eventId, "Event");
         Map<Long, Long> viewsMap = statisticsHandler.getViews(List.of(eventId));
         int views = statisticsHandler.extractViews(viewsMap, eventId);
 
-        EventDto eventDto = eventMapper.toDto(event, views);
+        List<CommentShortDto> commentDtos = commentRepository.findAllByEvent_Id(eventId).stream()
+                .map(comment -> commentMapper.toShortDto(comment))
+                .collect(Collectors.toList());
 
+        EventDto eventDto = eventMapper.toDto(event, views, commentDtos);
+
+        log.debug("Event fetched. Id={}", eventId);
         return eventDto;
     }
 
 
     @Override
+    @Transactional
     public EventDto updateEvent(Long userId, Long eventId, UpdateEventUserRequestDto updateEventUserRequestDto) {
-        log.debug("Attempting request to update event={} from user={}", eventId, userId);
+        log.debug("Attempting request to update event id={} from user id={}", eventId, userId);
 
-        User user = validationHandler.findEntityById(userRepository, userId, "User");
-        Event event = validationHandler.findEntityById(eventRepository, eventId, "Event");
-        validationHandler.validateUserEventState(event);
+        User user = entityHandler.findEntityById(userRepository, userId, "User");
+        Event event = entityHandler.findEntityById(eventRepository, eventId, "Event");
+        entityHandler.validateUserEventStateToUpdate(event);
         if (updateEventUserRequestDto.getEventDate() != null) {
-            validationHandler.validateUserEventDate(updateEventUserRequestDto.getEventDate());
+            entityHandler.validateUserEventDateToCreateAndUpdate(updateEventUserRequestDto.getEventDate());
         }
-        Event updEvent = eventMapper.updateEntity(event, updateEventUserRequestDto);
-        eventRepository.save(updEvent);
-        return eventMapper.toDto(updEvent, updEvent.getViews());
+        event = eventMapper.updateEntity(event, updateEventUserRequestDto);
+        eventRepository.flush();
+
+        List<CommentShortDto> commentDtos = commentRepository.findAllByEvent_Id(eventId).stream()
+                .map(comment -> commentMapper.toShortDto(comment))
+                .collect(Collectors.toList());
+
+        log.debug("Event updated. Id={}", eventId);
+        return eventMapper.toDto(event, event.getViews(), commentDtos);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ParticipationRequestDto> getParticipationRequests(Long userId, Long eventId) {
-        log.debug("Attempting to get all participation requests of event={} from user={}", eventId, userId);
-        User user = validationHandler.findEntityById(userRepository, userId, "User");
-        Event event = validationHandler.findEntityById(eventRepository, eventId, "Event");
+        log.debug("Attempting to get all participation requests of event id={} from user id={}", eventId, userId);
+        User user = entityHandler.findEntityById(userRepository, userId, "User");
+        Event event = entityHandler.findEntityById(eventRepository, eventId, "Event");
 
         List<ParticipationRequest> participationRequests = event.getRequests();
         List<ParticipationRequestDto> participationRequestDtos = participationRequests.stream()
                 .map(request -> participationRequestMapper.toDto(request))
                 .collect(Collectors.toList());
 
+        log.debug("Participation requests fetched. Size={}", participationRequestDtos.size());
         return participationRequestDtos;
     }
 
     @Override
+    @Transactional
     public EventRequestStatusUpdateResult changeParticipationRequestsStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
-        log.debug("Attempting to change status of requests={}, of event={}, from user={}", eventRequestStatusUpdateRequest.getRequestIds(),
+        log.debug("Attempting to change status of requests ids={}, of event id={}, from user id={}", eventRequestStatusUpdateRequest.getRequestIds(),
                 eventId,
                 userId);
         List<Long> requestIds = eventRequestStatusUpdateRequest.getRequestIds();
 
-        User user = validationHandler.findEntityById(userRepository, userId, "User");
-        Event event = validationHandler.findEntityById(eventRepository, eventId, "Event");
+        User user = entityHandler.findEntityById(userRepository, userId, "User");
+        Event event = entityHandler.findEntityById(eventRepository, eventId, "Event");
         if (!user.getId().equals(event.getInitiator().getId())) {
             throw new CustomAccessException("Only initiator can change statuses of requests");
         }
 
         List<ParticipationRequest> requests = requestIds.stream()
-                .map(id -> validationHandler.findEntityById(participationRequestRepository, id, "ParticipationRequest"))
+                .map(id -> entityHandler.findEntityById(participationRequestRepository, id, "ParticipationRequest"))
                 .collect(Collectors.toList());
         requests.forEach(request -> {
             if (!request.getEvent().getId().equals(event.getId())) {

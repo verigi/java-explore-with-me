@@ -35,13 +35,13 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "AND (e.eventDate <= ?5) " +
             "AND (?6 IS NULL OR e.participantLimit > (SELECT COUNT(pr) FROM ParticipationRequest pr " +
             "WHERE pr.event.id = e.id AND pr.status = 'CONFIRMED'))")
-    Page<Event> openFindFilteredEvents(String text,
-                                       List<Long> catIds,
-                                       Boolean paid,
-                                       LocalDateTime rangeStart,
-                                       LocalDateTime rangeEnd,
-                                       Boolean onlyAvailable,
-                                       Pageable pageable);
+    Page<Event> publicFindFilteredEvents(String text,
+                                         List<Long> catIds,
+                                         Boolean paid,
+                                         LocalDateTime rangeStart,
+                                         LocalDateTime rangeEnd,
+                                         Boolean onlyAvailable,
+                                         Pageable pageable);
 
     List<Event> findAllByInitiator_Id(Long userId, Pageable pageable);
 

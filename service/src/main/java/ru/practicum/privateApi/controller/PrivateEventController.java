@@ -14,7 +14,6 @@ import ru.practicum.general.dto.request.change.EventRequestStatusUpdateResult;
 import ru.practicum.general.dto.request.participation.ParticipationRequestDto;
 import ru.practicum.privateApi.service.event.PrivateEventService;
 
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -30,7 +29,6 @@ public class PrivateEventController {
         log.debug("New POST request received. Event title: {}", createEventDto.getTitle());
 
         EventDto eventDto = service.createEvent(userId, createEventDto);
-        log.debug("Event \"{}\" successfully saved", eventDto.getTitle());
         return ResponseEntity.status(HttpStatus.CREATED).body(eventDto);
     }
 
@@ -41,13 +39,7 @@ public class PrivateEventController {
         log.debug("New GET request received. Fetch all events from user with id: {}", userId);
 
         List<EventDto> eventDtos = service.getUserEvents(userId, from, size);
-        if (eventDtos.isEmpty()) {
-            log.debug("No events fetched. Return empty list");
-            return ResponseEntity.status(HttpStatus.OK).body(Collections.emptyList());
-        } else {
-            log.debug("Events successfully fetched. Count: {}", eventDtos.size());
-            return ResponseEntity.status(HttpStatus.OK).body(eventDtos);
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(eventDtos);
     }
 
     @GetMapping("/{eventId}")
@@ -56,7 +48,6 @@ public class PrivateEventController {
         log.debug("New GET request received. Fetch event with id: {}", eventId);
 
         EventDto eventDto = service.getUserEvent(userId, eventId);
-        log.debug("Event \"{}\" successfully fetched", eventDto.getTitle());
         return ResponseEntity.status(HttpStatus.OK).body(eventDto);
     }
 
@@ -67,7 +58,6 @@ public class PrivateEventController {
         log.debug("New PATCH request received. Update event with id: {}", eventId);
 
         EventDto eventDto = service.updateEvent(userId, eventId, updateEventUserRequestDto);
-        log.debug("Event \"{}\" successfully updated", eventDto.getTitle());
         return ResponseEntity.status(HttpStatus.OK).body(eventDto);
     }
 
@@ -77,7 +67,6 @@ public class PrivateEventController {
         log.debug("New GET request received. Get all participation requests of event with id: {}", eventId);
 
         List<ParticipationRequestDto> participationRequestDtos = service.getParticipationRequests(userId, eventId);
-        log.debug("Participation requests successfully fetched. Count: {}", participationRequestDtos.size());
         return ResponseEntity.status(HttpStatus.OK).body(participationRequestDtos);
     }
 
@@ -90,9 +79,6 @@ public class PrivateEventController {
                 eventRequestStatusUpdateRequest.getRequestIds());
 
         EventRequestStatusUpdateResult result = service.changeParticipationRequestsStatus(userId, eventId, eventRequestStatusUpdateRequest);
-        log.debug("Participation requests successfully updated. Confirmed count={}, rejected count={}",
-                result.getConfirmedRequests().size(),
-                result.getRejectedRequests().size());
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 

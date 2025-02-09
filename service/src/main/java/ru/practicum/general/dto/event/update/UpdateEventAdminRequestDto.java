@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UpdateEventAdminRequestDto extends UpdateEventDto {
+public class UpdateEventAdminRequestDto implements UpdateEventDto {
     @Size(min = 3, max = 120)
     private String title;
     @Size(min = 20, max = 2000)

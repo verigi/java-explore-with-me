@@ -6,11 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.general.dto.category.CategoryDto;
+import ru.practicum.general.dto.comment.CommentShortDto;
 import ru.practicum.general.dto.user.UserShortDto;
 import ru.practicum.general.enums.StateEvent;
 import ru.practicum.general.model.Location;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -36,4 +38,5 @@ public class EventDto {
     private Location location;
     private int confirmedRequests;
     private int views;
+    private List<CommentShortDto> comments;
 }

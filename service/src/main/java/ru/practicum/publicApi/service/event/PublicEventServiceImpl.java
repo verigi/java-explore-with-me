@@ -9,17 +9,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.EndpointHitDto;
+import ru.practicum.general.dto.comment.CommentShortDto;
 import ru.practicum.general.dto.event.EventDto;
 import ru.practicum.general.enums.StateEvent;
+import ru.practicum.general.mapper.CommentMapper;
 import ru.practicum.general.mapper.EventMapper;
 import ru.practicum.general.model.Event;
 import ru.practicum.general.repository.CategoryRepository;
+import ru.practicum.general.repository.CommentRepository;
 import ru.practicum.general.repository.EventRepository;
 import ru.practicum.general.util.StatisticsHandler;
-import ru.practicum.general.util.ValidationHandler;
+import ru.practicum.general.util.EntityHandler;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,27 +30,33 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Repository
+@Service
 public class PublicEventServiceImpl implements PublicEventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
+    private final CommentRepository commentRepository;
     private final EventMapper eventMapper;
+    private final CommentMapper commentMapper;
     private final StatisticsHandler statisticsHandler;
-    private final ValidationHandler validationHandler;
+    private final EntityHandler entityHandler;
     @Value("${app}")
     String app;
 
     @Autowired
     public PublicEventServiceImpl(EventRepository eventRepository,
                                   CategoryRepository categoryRepository,
+                                  CommentRepository commentRepository,
                                   EventMapper eventMapper,
+                                  CommentMapper commentMapper,
                                   StatisticsHandler statisticsHandler,
-                                  ValidationHandler validationHandler) {
+                                  EntityHandler entityHandler) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
+        this.commentRepository = commentRepository;
         this.eventMapper = eventMapper;
+        this.commentMapper = commentMapper;
         this.statisticsHandler = statisticsHandler;
-        this.validationHandler = validationHandler;
+        this.entityHandler = entityHandler;
     }
 
     @Override
@@ -96,9 +105,17 @@ public class PublicEventServiceImpl implements PublicEventService {
         }
 
         log.debug("Attempting to get events. Text={}, categories ids={}, paid={}, start={}, end={}, available={}, sort={}. Pagination: from={}, size={}",
-                text, catIds, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+                text,
+                catIds,
+                paid,
+                rangeStart,
+                rangeEnd,
+                onlyAvailable,
+                sort,
+                from,
+                size);
 
-        Page<Event> events = eventRepository.openFindFilteredEvents(text, catIds, paid, rangeStart, rangeEnd, onlyAvailable, pageable);
+        Page<Event> events = eventRepository.publicFindFilteredEvents(text, catIds, paid, rangeStart, rangeEnd, onlyAvailable, pageable);
         if (events.isEmpty()) {
             log.debug("No events found for the given filters");
             return List.of();
@@ -114,20 +131,26 @@ public class PublicEventServiceImpl implements PublicEventService {
         List<Long> eventIds = events.stream().map(event -> event.getId()).collect(Collectors.toList());
         Map<Long, Long> viewsMap = statisticsHandler.getViews(eventIds);
 
-
-        return events.stream()
+        List<EventDto> eventDtos = events.stream()
                 .map(event -> {
                     int views = statisticsHandler.extractViews(viewsMap, event.getId());
-                    return eventMapper.toDto(event, views);
+
+                    List<CommentShortDto> commentDtos = commentRepository.findAllByEvent_Id(event.getId()).stream()
+                            .map(comment -> commentMapper.toShortDto(comment))
+                            .collect(Collectors.toList());
+                    return eventMapper.toDto(event, views, commentDtos);
                 })
                 .collect(Collectors.toList());
+
+        log.debug("Events fetched. Size={}", eventDtos.size());
+        return eventDtos;
     }
 
     @Override
     @Transactional(readOnly = true)
     public EventDto getEvent(Long eventId, HttpServletRequest request) {
         log.debug("Attempting to get event: id={}", eventId);
-        Event event = validationHandler.findEntityById(eventRepository, eventId, "Event");
+        Event event = entityHandler.findEntityById(eventRepository, eventId, "Event");
         if (!event.getState().equals(StateEvent.PUBLISHED)) {
             throw new EntityNotFoundException("Denied to fetch event from public API: event is not published");
         }
@@ -141,6 +164,12 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         Map<Long, Long> viewsMap = statisticsHandler.getViews(List.of(eventId));
         int views = statisticsHandler.extractViews(viewsMap, eventId);
-        return eventMapper.toDto(event, views);
+
+        List<CommentShortDto> commentDtos = commentRepository.findAllByEvent_Id(eventId).stream()
+                .map(comment -> commentMapper.toShortDto(comment))
+                .collect(Collectors.toList());
+
+        log.debug("Event fetched. Id={}", eventId);
+        return eventMapper.toDto(event, views, commentDtos);
     }
 }

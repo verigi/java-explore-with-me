@@ -4,31 +4,31 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.general.dto.compilation.CompilationDto;
 import ru.practicum.general.mapper.CompilationMapper;
 import ru.practicum.general.model.Compilation;
 import ru.practicum.general.repository.CompilationRepository;
-import ru.practicum.general.util.ValidationHandler;
+import ru.practicum.general.util.EntityHandler;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Repository
+@Service
 public class PublicCompilationServiceImpl implements PublicCompilationService {
     private final CompilationRepository compilationRepository;
     private final CompilationMapper compilationMapper;
-    private final ValidationHandler validationHandler;
+    private final EntityHandler entityHandler;
 
     @Autowired
     public PublicCompilationServiceImpl(CompilationRepository compilationRepository,
                                         CompilationMapper compilationMapper,
-                                        ValidationHandler validationHandler) {
+                                        EntityHandler entityHandler) {
         this.compilationRepository = compilationRepository;
         this.compilationMapper = compilationMapper;
-        this.validationHandler = validationHandler;
+        this.entityHandler = entityHandler;
     }
 
     @Override
@@ -40,14 +40,17 @@ public class PublicCompilationServiceImpl implements PublicCompilationService {
         List<Compilation> compilations = pinned ? compilationRepository.findAllPinned(pageable) :
                 compilationRepository.findAllUnpinned(pageable);
 
-        if (compilations.isEmpty()) {
-            log.debug("No compilations fetched. Return empty list");
-            return List.of();
-        }
-
-        return compilations.stream()
+        List<CompilationDto> compilationDtos = compilations.stream()
                 .map(compilation -> compilationMapper.toDto(compilation))
                 .collect(Collectors.toList());
+
+        if (compilations.isEmpty()) {
+            log.debug("No compilations fetched. Return empty list");
+        } else {
+            log.debug("Compilations fetched. Size={}", compilationDtos.size());
+        }
+
+        return compilationDtos;
     }
 
     @Override
@@ -55,7 +58,9 @@ public class PublicCompilationServiceImpl implements PublicCompilationService {
     public CompilationDto getCompilation(Long compId) {
         log.debug("Attempting to get compilation. Compilation id: {}", compId);
 
-        Compilation compilation = validationHandler.findEntityById(compilationRepository, compId, "Compilation");
+        Compilation compilation = entityHandler.findEntityById(compilationRepository, compId, "Compilation");
+
+        log.debug("Compilation fetched. Id={}", compId);
         return compilationMapper.toDto(compilation);
     }
 }

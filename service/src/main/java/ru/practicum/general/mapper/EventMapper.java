@@ -3,6 +3,7 @@ package ru.practicum.general.mapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.practicum.general.dto.comment.CommentShortDto;
 import ru.practicum.general.dto.event.CreateEventDto;
 import ru.practicum.general.dto.event.EventDto;
 import ru.practicum.general.dto.event.EventShortDto;
@@ -16,6 +17,7 @@ import ru.practicum.general.model.Event;
 import ru.practicum.general.repository.CategoryRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class EventMapper {
@@ -30,7 +32,7 @@ public class EventMapper {
         this.categoryRepository = categoryRepository;
     }
 
-    public EventDto toDto(Event event, int views) {
+    public EventDto toDto(Event event, int views, List<CommentShortDto> comments) {
         return event == null ? null : EventDto.builder()
                 .id(event.getId())
                 .title(event.getTitle())
@@ -50,6 +52,22 @@ public class EventMapper {
                         .filter(request -> request.getStatus() == StateRequest.CONFIRMED)
                         .count())
                 .views(views)
+                .comments(comments)
+                .build();
+    }
+
+    public EventShortDto toShortDto(Event event) {
+        return event == null ? null : EventShortDto.builder()
+                .id(event.getId())
+                .title(event.getTitle())
+                .annotation(event.getAnnotation())
+                .eventDate(event.getEventDate())
+                .paid(event.isPaid())
+                .initiator(userMapper.toShortDto(event.getInitiator()))
+                .category(categoryMapper.toDto(event.getCategory()))
+                .confirmedRequests(Math.toIntExact(event.getRequests().stream()
+                        .filter(request -> request.getStatus().equals(StateRequest.CONFIRMED))
+                        .count()))
                 .build();
     }
 

@@ -23,11 +23,6 @@ public class PublicCompilationController {
                                                                 @RequestParam(defaultValue = "10") int size) {
         log.debug("New GET request received. Params: pinned={}, from={}, size={}", pinned, from, size);
         List<CompilationDto> compilationDtos = service.getCompilations(pinned, from, size);
-        if (compilationDtos.isEmpty()) {
-            log.debug("No compilations fetched. Return empty list");
-        } else {
-            log.debug("Compilation successfully fetched. Count: {}", compilationDtos.size());
-        }
         return ResponseEntity.status(HttpStatus.OK).body(compilationDtos);
     }
 
