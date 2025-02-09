@@ -59,7 +59,6 @@ public class PrivateCommentServiceImpl implements PrivateCommentService {
         comment.setAuthor(user);
         comment.setEvent(event);
         commentRepository.save(comment);
-
         return commentMapper.toDto(comment);
     }
 
@@ -72,7 +71,7 @@ public class PrivateCommentServiceImpl implements PrivateCommentService {
                 request.getText());
 
         Comment comment = entityHandler.findEntityById(commentRepository, commentId, "Comment");
-        if (comment.getAuthor().getId() != userId) {
+        if (!comment.getAuthor().getId().equals(userId)) {
             throw new CustomAccessException("User can only update his comment");
         }
         comment = commentMapper.updateEntity(comment, request);
@@ -88,7 +87,7 @@ public class PrivateCommentServiceImpl implements PrivateCommentService {
         log.debug("Attempting to delete comment. Id={}", commentId);
 
         Comment comment = entityHandler.findEntityById(commentRepository, commentId, "Comment");
-        if (comment.getAuthor().getId() != userId) {
+        if (!comment.getAuthor().getId().equals(userId)) {
             throw new CustomAccessException("User can only delete his comment");
         }
 
