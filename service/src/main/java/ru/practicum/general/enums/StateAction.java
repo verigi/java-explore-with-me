@@ -1,11 +1,15 @@
 package ru.practicum.general.enums;
 
 public enum StateAction {
-    // admin
+    // admin/event
     PUBLISH_EVENT,
     REJECT_EVENT,
 
-    // user
+    // admin/comment
+    PUBLISH_COMMENT,
+    REJECT_COMMENT,
+
+    // user/event
     SEND_TO_REVIEW,
-    CANCEL_REVIEW
+    CANCEL_REVIEW,
 }

@@ -7,19 +7,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import ru.practicum.general.dto.event.update.UpdateEventAdminRequestDto;
 import ru.practicum.general.enums.StateAction;
+import ru.practicum.general.enums.StateComment;
 import ru.practicum.general.enums.StateEvent;
 import ru.practicum.general.exceptions.CustomConflictException;
 import ru.practicum.general.exceptions.DuplicationException;
+import ru.practicum.general.exceptions.InvalidStateException;
+import ru.practicum.general.model.Comment;
 import ru.practicum.general.model.Event;
 import ru.practicum.general.model.User;
 import ru.practicum.general.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class ValidationHandler {
+public class EntityHandler {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
@@ -27,11 +31,11 @@ public class ValidationHandler {
     private final CompilationRepository compilationRepository;
 
     @Autowired
-    public ValidationHandler(UserRepository userRepository,
-                             EventRepository eventRepository,
-                             CategoryRepository categoryRepository,
-                             ParticipationRequestRepository participationRequestRepository,
-                             CompilationRepository compilationRepository) {
+    public EntityHandler(UserRepository userRepository,
+                         EventRepository eventRepository,
+                         CategoryRepository categoryRepository,
+                         ParticipationRequestRepository participationRequestRepository,
+                         CompilationRepository compilationRepository) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
@@ -47,6 +51,16 @@ public class ValidationHandler {
                     log.warn("{} with id {} does not exist", entityName, id);
                     return new EntityNotFoundException(entityName + " with id " + id + " does not exist");
                 });
+    }
+
+    public <T extends Enum<T>> List<T> parseStates(List<String> stateList, Class<T> stateEnum) {
+        try {
+            return stateList.stream()
+                    .map(state -> Enum.valueOf(stateEnum, state))
+                    .collect(Collectors.toList());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidStateException("Invalid state provided. State enum: " + stateEnum.getSimpleName());
+        }
     }
 
     // user
@@ -121,13 +135,25 @@ public class ValidationHandler {
         }
     }
 
-    public void validateUserEventState(Event event) {
+    public void validateUserEventStateToUpdate(Event event) {
         if (!StateEvent.CANCELED.equals(event.getState()) && !StateEvent.PENDING.equals(event.getState())) {
             throw new CustomConflictException("Event must be in 'CANCELED' or 'PENDING' state to be updated");
         }
     }
 
-    public void validateUserEventDate(LocalDateTime eventDate) {
+    public void validateUserEventStateToComment(Event event) {
+        if (!StateEvent.PUBLISHED.equals(event.getState())) {
+            throw new CustomConflictException("Event must be in 'PUBLISHED' state to be commented");
+        }
+    }
+
+    public void validateUserCommentStateToGet(Comment comment) {
+        if (!StateComment.PUBLISHED.equals(comment.getState())) {
+            throw new CustomConflictException("Comment must be in 'PUBLISHED' state to be fetched from Public API");
+        }
+    }
+
+    public void validateUserEventDateToCreateAndUpdate(LocalDateTime eventDate) {
         if (LocalDateTime.now().plusHours(2).isAfter(eventDate)) {
             throw new IllegalArgumentException("Update event date should be later than 2 hours after current time");
         }

@@ -36,12 +36,6 @@ public class PublicEventController {
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, from, size, sort);
 
         List<EventDto> eventDtos = service.getFilteredEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, from, size, sort, request);
-
-        if (eventDtos.isEmpty()) {
-            log.debug("No events fetched. Return empty list");
-        } else {
-            log.debug("Events successfully fetched. Count: {}", eventDtos.size());
-        }
         return ResponseEntity.status(HttpStatus.OK).body(eventDtos);
     }
 
@@ -50,7 +44,6 @@ public class PublicEventController {
         log.debug("New GET request received. Event id: {}", eventId);
 
         EventDto eventDto = service.getEvent(eventId, request);
-        log.debug("Event successfully fetched");
         return ResponseEntity.status(HttpStatus.OK).body(eventDto);
     }
 }

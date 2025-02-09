@@ -20,29 +20,23 @@ public class AdminCompilationController {
 
     @PostMapping
     public ResponseEntity<CompilationDto> createCompilation(@Valid @RequestBody CreateCompilationDto createCompilationDto) {
-        log.debug("New POST request received. Compilation title: ", createCompilationDto.getTitle());
-        //ex 400 BAD_REQUEST
-        //ex 409 CONFLICT
-        CompilationDto compilationDto = service.createCompilation(createCompilationDto); // тут будет сервис
-        log.debug("Compilation \"{}\" successfully saved", compilationDto.getTitle());
+        log.debug("New POST request received. Compilation title={}", createCompilationDto.getTitle());
+        CompilationDto compilationDto = service.createCompilation(createCompilationDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(compilationDto);
     }
 
     @DeleteMapping("/{compId}")
     public ResponseEntity<Void> deleteCompilation(@PathVariable("compId") Long compId) {
-        log.debug("New DELETE request received. Category id: {}", compId);
-        //ex 404 NOT_FOUND
-        service.deleteCompilation(compId); // тут будет сервис
-        log.debug("Compilation with id {} successfully deleted", compId);
+        log.debug("New DELETE request received. Id={}", compId);
+        service.deleteCompilation(compId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PatchMapping("/{compId}")
     public ResponseEntity<CompilationDto> updateCompilation(@PathVariable("compId") Long compId,
                                                             @Valid @RequestBody UpdateCompilationDto updateCompilationDto) {
-        log.debug("New PATCH request received. Compilation id: {}", compId);
-        CompilationDto compilationDto = service.updateCompilation(compId, updateCompilationDto); // тут будет сервис
-        log.debug("Compilation \"{}\" successfully updated", compilationDto.getTitle());
+        log.debug("New PATCH request received. Id={}", compId);
+        CompilationDto compilationDto = service.updateCompilation(compId, updateCompilationDto);
         return ResponseEntity.status(HttpStatus.OK).body(compilationDto);
     }
 }

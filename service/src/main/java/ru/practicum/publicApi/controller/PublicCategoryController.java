@@ -21,7 +21,6 @@ public class PublicCategoryController {
     public ResponseEntity<CategoryDto> getCategory(@PathVariable("catId") Long catId) {
         log.debug("New GET request received. Category id: {}", catId);
         CategoryDto categoryDto = service.getCategory(catId);
-        log.debug("Category id={} successfully found", catId);
         return ResponseEntity.status(HttpStatus.OK).body(categoryDto);
     }
 
@@ -30,12 +29,6 @@ public class PublicCategoryController {
                                                      @RequestParam(defaultValue = "10") int size) {
         log.debug("New GET request received. Get all categories");
         List<CategoryDto> categoryDtos = service.getCategories(from, size);
-        if (categoryDtos.isEmpty()) {
-            log.debug("No categories fetched. Return empty list");
-        } else {
-            log.debug("Categories successfully fetched. Count: {}", categoryDtos.size());
-        }
         return ResponseEntity.status(HttpStatus.OK).body(categoryDtos);
     }
-
 }

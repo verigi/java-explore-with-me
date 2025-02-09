@@ -68,14 +68,6 @@ public class GeneralExceptionHandler {
                 extractErrors(e));
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<ApiErrorDto> handleGeneralException(Exception e) {
-//        return errorBuilder("Unexpected error",
-//                "Something went wrong",
-//                HttpStatus.INTERNAL_SERVER_ERROR,
-//                extractErrors(e));
-//    }
-
     private ResponseEntity<ApiErrorDto> errorBuilder(String message, String reason, HttpStatus status, List<String> errors) {
         ApiErrorDto apiErrorDto = ApiErrorDto.builder()
                 .message(message)

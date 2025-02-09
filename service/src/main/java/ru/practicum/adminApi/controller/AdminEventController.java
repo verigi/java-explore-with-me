@@ -12,7 +12,6 @@ import ru.practicum.general.dto.event.EventDto;
 import ru.practicum.general.dto.event.update.UpdateEventAdminRequestDto;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -37,11 +36,10 @@ public class AdminEventController {
 
         if (eventDtos.isEmpty()) {
             log.debug("No events fetched. Return empty list");
-            return ResponseEntity.status(HttpStatus.OK).body(Collections.emptyList());
         } else {
             log.debug("Events successfully fetched. Count: {}", eventDtos.size());
-            return ResponseEntity.status(HttpStatus.OK).body(eventDtos);
         }
+        return ResponseEntity.status(HttpStatus.OK).body(eventDtos);
     }
 
 
@@ -49,10 +47,7 @@ public class AdminEventController {
     public ResponseEntity<EventDto> updateEvent(@PathVariable("eventId") Long eventId,
                                                 @Valid @RequestBody UpdateEventAdminRequestDto updateEventAdminRequestDto) {
         log.debug("New PATCH request received. Trying to update event. Event id: {}", eventId);
-        //ex 404 NOT_FOUND
-        //ex 409 CONFLICT
-        EventDto eventDto = service.updateEvent(eventId, updateEventAdminRequestDto); // тут будет сервис
-        log.debug("Event \"{}\" successfully updated", eventDto.getTitle());
+        EventDto eventDto = service.updateEvent(eventId, updateEventAdminRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(eventDto);
     }
 }

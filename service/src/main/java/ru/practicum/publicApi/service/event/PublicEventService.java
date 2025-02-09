@@ -8,15 +8,15 @@ import java.util.List;
 
 public interface PublicEventService {
     List<EventDto> getFilteredEvents(String text,
-                                     List<Long> catIds,
-                                     Boolean paid,
-                                     LocalDateTime rangeStart,
-                                     LocalDateTime rangeEnd,
-                                     Boolean onlyAvailable,
-                                     int from,
-                                     int size,
-                                     String sort,
-                                     HttpServletRequest request);
+                                             List<Long> catIds,
+                                             Boolean paid,
+                                             LocalDateTime rangeStart,
+                                             LocalDateTime rangeEnd,
+                                             Boolean onlyAvailable,
+                                             int from,
+                                             int size,
+                                             String sort,
+                                             HttpServletRequest request);
 
     EventDto getEvent(Long eventId, HttpServletRequest request);
 }
